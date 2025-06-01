@@ -1,0 +1,194 @@
+<%- include("partials/header") %>
+
+<style>
+    /* Estilos específicos para browse.ejs - Mover para style.css */
+    .recipe-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Grid responsivo */
+        gap: 25px;
+        margin-top: 20px;
+    }
+    .recipe-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out;
+        display: flex;
+        flex-direction: column;
+    }
+    .recipe-card:hover {
+        transform: translateY(-5px);
+    }
+    .recipe-card img {
+        width: 100%;
+        height: 200px; /* Altura fixa para a imagem */
+        object-fit: cover; /* Garante que a imagem cubra a área */
+        display: block;
+    }
+    .recipe-card-content {
+        padding: 15px;
+        flex-grow: 1; /* Faz o conteúdo ocupar o espaço restante */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Empurra o link para baixo */
+    }
+    .recipe-card h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        color: #333;
+    }
+    .recipe-card p {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.4;
+        /* Limitar descrição a algumas linhas (opcional) */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3; /* Número de linhas */
+        -webkit-box-orient: vertical;
+    }
+    .recipe-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto; /* Empurra para o fundo */
+    }
+    .recipe-card-footer .author-category {
+        font-size: 0.8em;
+        color: #888;
+    }
+     .recipe-card-footer .author-category strong {
+         color: #555;
+     }
+    .recipe-card-footer a {
+        background-color: #f0ad4e;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    .recipe-card-footer a:hover {
+        background-color: #ec971f;
+    }
+    .pagination {
+        margin-top: 40px;
+        text-align: center;
+    }
+    .pagination a, .pagination span {
+        display: inline-block;
+        padding: 8px 15px;
+        margin: 0 3px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #337ab7;
+    }
+    .pagination a:hover {
+        background-color: #eee;
+    }
+    .pagination span.current {
+        background-color: #f0ad4e;
+        color: #fff;
+        border-color: #f0ad4e;
+        font-weight: bold;
+    }
+    .pagination span.disabled {
+        color: #ccc;
+        border-color: #eee;
+    }
+    .no-recipes {
+        text-align: center;
+        margin-top: 50px;
+        color: #777;
+        font-size: 1.2em;
+    }
+    .message-feedback {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .message-feedback.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .message-feedback.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+
+<h2><%= typeof selectedCategoryId !== "undefined" && selectedCategoryId ? categorias.find(c=>c.id == selectedCategoryId)?.nome || "Receitas" : "Todas as Receitas" %> <%= typeof search !== "undefined" && search ? `(Busca: "${search}")` : "" %></h2>
+
+<% if (typeof mensagem !== "undefined" && mensagem) { %>
+    <div class="message-feedback <%= typeof sucesso !== "undefined" && sucesso == "true" ? "success" : "error" %>">
+        <%= mensagem %>
+    </div>
+<% } %>
+
+<% if (typeof receitas !== "undefined" && receitas.length > 0) { %>
+    <div class="recipe-grid">
+        <% receitas.forEach(receita => { %>
+            <div class="recipe-card">
+                <a href="/receita/<%= receita.id %>">
+                    <!-- Usa a primeira imagem ou uma imagem padrão -->
+                    <img src="<%= receita.imagens && receita.imagens.length > 0 ? receita.imagens[0] : 
+'/images/placeholder_recipe.png' %>" alt="<%= receita.titulo %>">
+                </a>
+                <div class="recipe-card-content">
+                    <div>
+                        <h3><a href="/receita/<%= receita.id %>" style="color: inherit; text-decoration: none;"><%= receita.titulo %></a></h3>
+                        <p><%= receita.descricao %></p>
+                    </div>
+                    <div class="recipe-card-footer">
+                        <span class="author-category">Por <strong><%= receita.autor_nome %></strong> em <strong><%= receita.categoria_nome %></strong></span>
+                        <a href="/receita/<%= receita.id %>">Ver Receita</a>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+    <!-- Paginação -->
+    <% if (totalPages > 1) { %>
+        <div class="pagination">
+            <% const baseUrl = `/browse?${typeof search !== "undefined" && search ? "search=" + encodeURIComponent(search) : ""}${typeof selectedCategoryId !== "undefined" && selectedCategoryId ? "&categoria_id=" + selectedCategoryId : ""}&page=`; %>
+
+            <% if (currentPage > 1) { %>
+                <a href="<%= baseUrl + (currentPage - 1) %>">&laquo; Anterior</a>
+            <% } else { %>
+                <span class="disabled">&laquo; Anterior</span>
+            <% } %>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (i === currentPage) { %>
+                    <span class="current"><%= i %></span>
+                <% } else { %>
+                    <a href="<%= baseUrl + i %>"><%= i %></a>
+                <% } %>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+                <a href="<%= baseUrl + (currentPage + 1) %>">Próxima &raquo;</a>
+            <% } else { %>
+                <span class="disabled">Próxima &raquo;</span>
+            <% } %>
+        </div>
+    <% } %>
+
+<% } else { %>
+    <p class="no-recipes">Nenhuma receita encontrada<%= typeof search !== "undefined" && search ? ` para a busca "${search}"` : "" %><%= typeof selectedCategoryId !== "undefined" && selectedCategoryId ? ` na categoria selecionada` : "" %>.</p>
+<% } %>
+
+<%- include("partials/footer") %>
+

@@ -1,0 +1,224 @@
+<%- include("partials/header") %>
+
+<style>
+    /* Estilos específicos para recipe_form.ejs - Mover para style.css */
+    .form-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+        border-bottom: 2px solid #f0ad4e;
+        padding-bottom: 10px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="file"],
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 1em;
+    }
+    .form-group textarea {
+        min-height: 120px; /* Altura mínima para textareas */
+        resize: vertical; /* Permite redimensionar verticalmente */
+    }
+    .form-group input[type="file"] {
+        padding: 8px;
+    }
+    .image-preview-container {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .image-preview-item {
+        position: relative;
+    }
+    .image-preview-item img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+    .remove-image-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: rgba(217, 83, 79, 0.8); /* Vermelho translúcido */
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        line-height: 18px; /* Ajustar para centralizar o X */
+        text-align: center;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .form-actions {
+        margin-top: 30px;
+        text-align: right;
+    }
+    .form-actions button {
+        background-color: #5cb85c;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.1em;
+        transition: background-color 0.3s ease;
+    }
+    .form-actions button:hover {
+        background-color: #4cae4c;
+    }
+    .message-feedback {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .message-feedback.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .message-feedback.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+
+<div class="form-container">
+    <h2><%= receita ? "Editar Receita" : "Cadastrar Nova Receita" %></h2>
+
+    <% if (typeof mensagem !== "undefined" && mensagem) { %>
+        <div class="message-feedback <%= typeof sucesso !== "undefined" && sucesso ? "success" : "error" %>">
+            <%= mensagem %>
+        </div>
+    <% } %>
+
+    <!-- O actionUrl é definido na rota GET -->
+    <form action="<%= actionUrl %>" method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label for="titulo">Nome da Receita</label>
+            <input type="text" id="titulo" name="titulo" value="<%= receita ? receita.titulo : '' %>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="categoria_id">Categoria</label>
+            <select id="categoria_id" name="categoria_id" required>
+                <option value="" disabled <%= !receita ? "selected" : "" %>>Selecione uma categoria</option>
+                <% if (typeof categorias !== "undefined" && categorias.length > 0) { %>
+                    <% categorias.forEach(categoria => { %>
+                        <option value="<%= categoria.id %>" <%= receita && receita.categoria_id == categoria.id ? "selected" : "" %>>
+                            <%= categoria.nome %>
+                        </option>
+                    <% }) %>
+                <% } %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tempo_preparo">Tempo de Preparo</label>
+            <input type="text" id="tempo_preparo" name="tempo_preparo" value="<%= receita ? receita.tempo_preparo : '' %>" placeholder="Ex: 30 minutos, 1 hora">
+        </div>
+
+        <div class="form-group">
+            <label for="rendimento">Rendimento</label>
+            <input type="text" id="rendimento" name="rendimento" value="<%= receita ? receita.rendimento : '' %>" placeholder="Ex: 4 porções, Serve 6 pessoas">
+        </div>
+
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" name="descricao" rows="4" required><%= receita ? receita.descricao : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="ingredientes">Ingredientes</label>
+            <textarea id="ingredientes" name="ingredientes" rows="8" placeholder="Liste os ingredientes, um por linha." required><%= receita ? receita.ingredientes : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="modo_preparo">Modo de Preparo</label>
+            <textarea id="modo_preparo" name="modo_preparo" rows="10" placeholder="Descreva os passos do preparo." required><%= receita ? receita.modo_preparo : '' %></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="fotos">Fotos (Selecione uma ou mais)</label>
+            <input type="file" id="fotos" name="fotos" multiple accept="image/*">
+            <!-- Preview das imagens existentes (se editando) -->
+            <% if (receita && receita.imagens && receita.imagens.length > 0) { %>
+                <div class="image-preview-container" id="existing-image-preview">
+                    <p style="width: 100%; margin-bottom: 5px; font-size: 0.9em; color: #555;">Imagens atuais (novos uploads substituirão estas):</p>
+                    <% receita.imagens.forEach((imgPath, index) => { %>
+                        <div class="image-preview-item">
+                            <img src="<%= imgPath %>" alt="Imagem <%= index + 1 %>">
+                            <!-- Não adicionamos botão de remover aqui, pois o upload substitui todas -->
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+             <!-- Preview para novas imagens (com JS) -->
+             <div class="image-preview-container" id="new-image-preview"></div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit"><%= receita ? "Atualizar Receita" : "Cadastrar Receita" %></button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // Script para preview de novas imagens selecionadas
+    const fotosInput = document.getElementById("fotos");
+    const newPreviewContainer = document.getElementById("new-image-preview");
+
+    fotosInput.addEventListener("change", function() {
+        newPreviewContainer.innerHTML = ""; // Limpa previews anteriores
+        if (this.files) {
+            Array.from(this.files).forEach(file => {
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imgElement = document.createElement("img");
+                        imgElement.src = e.target.result;
+                        const previewItem = document.createElement("div");
+                        previewItem.classList.add("image-preview-item");
+                        previewItem.appendChild(imgElement);
+                        newPreviewContainer.appendChild(previewItem);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
+
+<%- include("partials/footer") %>
+

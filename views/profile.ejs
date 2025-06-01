@@ -1,0 +1,334 @@
+<%- include("partials/header") %>
+
+<style>
+    /* Estilos específicos para profile.ejs - Mover para style.css */
+    .profile-container {
+        max-width: 1000px;
+        margin: 30px auto;
+    }
+    .profile-header {
+        background-color: #607d8b; /* Azul acinzentado do Figma */
+        color: #fff;
+        padding: 20px;
+        border-radius: 8px 8px 0 0;
+        position: relative;
+        min-height: 150px; /* Altura mínima para a capa */
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end; /* Alinha foto de perfil na base */
+    }
+    .profile-picture-container {
+        position: relative;
+        margin-left: 30px;
+        margin-bottom: -50px; /* Puxa a foto para baixo, sobrepondo a seção de conteúdo */
+        border: 4px solid #fff;
+        border-radius: 50%;
+        background-color: #fff;
+    }
+    .profile-picture {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+    }
+    .profile-header h2 {
+        margin: 0 0 0 170px; /* Espaço para a foto */
+        font-size: 1.8em;
+        padding-bottom: 10px; /* Espaço abaixo do nome */
+    }
+    .profile-content {
+        background-color: #fff;
+        padding: 70px 30px 30px 30px; /* Padding superior maior por causa da foto */
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* Coluna lateral e principal */
+        gap: 30px;
+    }
+    .profile-sidebar h3, .profile-main h3 {
+        color: #333;
+        border-bottom: 2px solid #f0ad4e;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        font-size: 1.4em;
+    }
+    .profile-info p {
+        margin-bottom: 10px;
+        color: #555;
+        line-height: 1.5;
+    }
+    .profile-info strong {
+        color: #333;
+    }
+    .profile-info i {
+        margin-right: 8px;
+        color: #f0ad4e;
+        width: 15px; /* Alinhamento */
+        text-align: center;
+    }
+    .edit-profile-section, .change-password-section {
+        margin-top: 20px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+    }
+    .edit-profile-section h4, .change-password-section h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #444;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+        font-size: 0.9em;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"],
+    .form-group input[type="date"],
+    .form-group input[type="file"],
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 0.95em;
+    }
+    .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+    .form-group input[type="file"] {
+        padding: 5px;
+    }
+    .form-actions button {
+        background-color: #5bc0de; /* Azul para ações de edição */
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: background-color 0.3s ease;
+        margin-top: 5px;
+    }
+    .form-actions button:hover {
+        background-color: #31b0d5;
+    }
+    .recipe-list-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    .recipe-list-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .recipe-list-item img {
+        width: 80px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    .recipe-list-item-info h5 {
+        margin: 0 0 5px 0;
+        font-size: 1.1em;
+    }
+    .recipe-list-item-info h5 a {
+        color: #337ab7;
+        text-decoration: none;
+    }
+    .recipe-list-item-info h5 a:hover {
+        text-decoration: underline;
+    }
+    .recipe-list-item-info p {
+        font-size: 0.9em;
+        color: #777;
+        margin: 0;
+    }
+    .message-feedback {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .message-feedback.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    .message-feedback.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+</style>
+
+<% if (typeof usuario !== "undefined" && usuario) { %>
+<div class="profile-container">
+
+    <% if (typeof mensagem !== "undefined" && mensagem) { %>
+        <div class="message-feedback <%= typeof sucesso !== "undefined" && sucesso == "true" ? "success" : "error" %>">
+            <%= mensagem %>
+        </div>
+    <% } %>
+
+    <div class="profile-header" style="background-image: url("<%= usuario.foto_capa_path ? usuario.foto_capa_path : 
+'/images/placeholder_cover.png' %>");">
+        <div class="profile-picture-container">
+            <img class="profile-picture" src="<%= usuario.foto_perfil_path ? usuario.foto_perfil_path : 
+'/images/placeholder_user.png' %>" alt="Foto de Perfil">
+        </div>
+        <h2><%= usuario.nome %></h2>
+    </div>
+
+    <div class="profile-content">
+        <aside class="profile-sidebar">
+            <h3>Informações Pessoais</h3>
+            <div class="profile-info">
+                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <%= usuario.email %></p>
+                <% if (usuario.telefone) { %>
+                    <p><i class="fas fa-phone"></i> <strong>Telefone:</strong> <%= usuario.telefone %></p>
+                <% } %>
+                <% if (usuario.data_nascimento) { %>
+                    <p><i class="fas fa-calendar-alt"></i> <strong>Nascimento:</strong> <%= new Date(usuario.data_nascimento).toLocaleDateString("pt-BR") %></p>
+                <% } %>
+                <% if (usuario.sobre) { %>
+                    <p><i class="fas fa-info-circle"></i> <strong>Sobre:</strong><br> <%- usuario.sobre.replace(/\n/g, "<br>") %></p>
+                <% } %>
+                 <p><i class="fas fa-user-clock"></i> <strong>Membro desde:</strong> <%= new Date(usuario.data_criacao).toLocaleDateString("pt-BR") %></p>
+            </div>
+
+            <!-- Formulário de Edição -->
+            <div class="edit-profile-section">
+                <h4>Editar Perfil</h4>
+                <form action="/perfil/atualizar" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" name="nome" value="<%= usuario.nome %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="<%= usuario.email %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" name="telefone" value="<%= usuario.telefone || "" %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="data_nascimento">Data de Nascimento</label>
+                        <input type="date" id="data_nascimento" name="data_nascimento" value="<%= usuario.data_nascimento ? new Date(usuario.data_nascimento).toISOString().split("T")[0] : "" %>">
+                    </div>
+                    <div class="form-group">
+                        <label for="sobre">Sobre Você</label>
+                        <textarea id="sobre" name="sobre"><%= usuario.sobre || "" %></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="foto_perfil">Alterar Foto de Perfil</label>
+                        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="foto_capa">Alterar Foto de Capa</label>
+                        <input type="file" id="foto_capa" name="foto_capa" accept="image/*">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Formulário de Alterar Senha -->
+            <div class="change-password-section">
+                <h4>Alterar Senha</h4>
+                <form action="/perfil/alterar-senha" method="POST">
+                    <div class="form-group">
+                        <label for="senha_atual">Senha Atual</label>
+                        <input type="password" id="senha_atual" name="senha_atual" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nova_senha">Nova Senha</label>
+                        <input type="password" id="nova_senha" name="nova_senha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmar_nova_senha">Confirmar Nova Senha</label>
+                        <input type="password" id="confirmar_nova_senha" name="confirmar_nova_senha" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Alterar Senha</button>
+                    </div>
+                </form>
+            </div>
+        </aside>
+
+        <main class="profile-main">
+            <section id="minhas-receitas">
+                <h3>Minhas Receitas</h3>
+                <% if (typeof minhasReceitas !== "undefined" && minhasReceitas.length > 0) { %>
+                    <% minhasReceitas.forEach(receita => { %>
+                        <div class="recipe-list-item">
+                            <a href="/receita/<%= receita.id %>">
+                                <img src="<%= receita.imagens && receita.imagens.length > 0 ? receita.imagens[0] : 
+'/images/placeholder_recipe.png' %>" alt="<%= receita.titulo %>">
+                            </a>
+                            <div class="recipe-list-item-info">
+                                <h5><a href="/receita/<%= receita.id %>"><%= receita.titulo %></a></h5>
+                                <p>Categoria: <%= receita.categoria_nome %> | Status: <%= receita.is_aprovado ? "Aprovada" : "Pendente" %></p>
+                                <p>Criada em: <%= new Date(receita.data_criacao).toLocaleDateString("pt-BR") %></p>
+                                <!-- Adicionar link de editar -->
+                                <a href="/editar-receita/<%= receita.id %>" style="font-size: 0.9em; color: #5bc0de;">Editar</a>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>Você ainda não cadastrou nenhuma receita.</p>
+                    <a href="/nova-receita" class="btn" style="background-color: #f0ad4e; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none;">Cadastrar Receita</a>
+                <% } %>
+            </section>
+
+            <section id="favoritos" style="margin-top: 40px;">
+                <h3>Receitas Favoritas</h3>
+                 <% if (typeof meusFavoritos !== "undefined" && meusFavoritos.length > 0) { %>
+                    <% meusFavoritos.forEach(receita => { %>
+                        <div class="recipe-list-item">
+                            <a href="/receita/<%= receita.id %>">
+                                <img src="<%= receita.imagens && receita.imagens.length > 0 ? receita.imagens[0] : 
+'/images/placeholder_recipe.png' %>" alt="<%= receita.titulo %>">
+                            </a>
+                            <div class="recipe-list-item-info">
+                                <h5><a href="/receita/<%= receita.id %>"><%= receita.titulo %></a></h5>
+                                <p>Categoria: <%= receita.categoria_nome %></p>
+                                <!-- Adicionar formulário para remover favorito -->
+                                <form action="/receita/<%= receita.id %>/favoritar" method="POST" style="display: inline;">
+                                     <button type="submit" style="background: none; border: none; color: #d9534f; padding: 0; cursor: pointer; font-size: 0.9em;">Remover Favorito</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>Você ainda não favoritou nenhuma receita.</p>
+                    <a href="/browse" class="btn" style="background-color: #f0ad4e; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none;">Explorar Receitas</a>
+                <% } %>
+            </section>
+        </main>
+    </div>
+
+</div>
+<% } else { %>
+    <p>Erro ao carregar o perfil do usuário. Tente fazer <a href="/">login</a> novamente.</p>
+<% } %>
+
+<%- include("partials/footer") %>
+

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof titulo !== "undefined" ? titulo : "RecipeMaster" %></title>
+    <!-- Adicionar CSS principal -->
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <!-- Adicionar Font Awesome ou outra biblioteca de ícones, se necessário -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos básicos para header/nav - Mover para style.css */
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #f8f9fa; /* Fundo geral claro */
+        }
+        .navbar {
+            background-color: #fff; /* Fundo branco para a navbar */
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #f0ad4e; /* Borda laranja/amarela */
+        }
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .navbar-search {
+            flex-grow: 1;
+            margin: 0 40px;
+            position: relative;
+        }
+        .navbar-search input[type="search"] {
+            width: 100%;
+            padding: 8px 15px 8px 35px; /* Espaço para o ícone */
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+         .navbar-search .fa-search {
+             position: absolute;
+             left: 12px;
+             top: 50%;
+             transform: translateY(-50%);
+             color: #aaa;
+         }
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .nav-link {
+            color: #555;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .nav-link:hover {
+            color: #f0ad4e;
+        }
+        .nav-link i {
+            font-size: 1.1em;
+        }
+        .user-dropdown .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .user-dropdown img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover; /* Garante que a imagem cubra o espaço */
+            border: 1px solid #eee;
+        }
+        /* Estilos para categorias - Mover para style.css */
+        .category-nav {
+            background-color: #e9ecef; /* Fundo cinza claro para categorias */
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .category-nav a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 15px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-weight: 500;
+        }
+        .category-nav a:hover,
+        .category-nav a.active {
+            background-color: #f0ad4e; /* Laranja/Amarelo */
+            color: #fff;
+        }
+        .main-container {
+            padding: 0 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a class="navbar-brand" href="/browse">RECIPEMASTER</a>
+
+    <div class="navbar-search">
+        <form action="/browse" method="GET">
+            <i class="fas fa-search"></i>
+            <input type="search" name="search" placeholder="Buscar receitas..." value="<%= typeof search !== 'undefined' ? search : '' %>">
+            <!-- Manter categoria selecionada na busca -->
+            <% if (typeof selectedCategoryId !== 'undefined' && selectedCategoryId) { %>
+                <input type="hidden" name="categoria_id" value="<%= selectedCategoryId %>">
+            <% } %>
+        </form>
+    </div>
+
+    <div class="navbar-nav">
+        <a class="nav-link" href="/nova-receita"><i class="fas fa-plus-circle"></i> Upload Receita</a>
+        <a class="nav-link" href="/perfil#favoritos"><i class="fas fa-heart"></i> Receitas Favoritas</a>
+        <!-- Dropdown do Usuário -->
+        <div class="user-dropdown">
+             <a class="nav-link dropdown-toggle" href="/perfil">
+                 <!-- Usar foto do perfil se disponível, senão ícone padrão -->
+                 <% if (typeof usuario !== 'undefined' && usuario && usuario.foto_perfil_path) { %>
+                     <img src="<%= usuario.foto_perfil_path %>" alt="Foto Perfil">
+                 <% } else { %>
+                     <i class="fas fa-user-circle"></i>
+                 <% } %>
+                <span><%= typeof usuarioNome !== "undefined" ? usuarioNome : "Usuário" %></span>
+             </a>
+             <!-- Aqui poderia ter um dropdown real com JS -->
+             <!-- <div class="dropdown-menu">
+                 <a href="/perfil">Meu Perfil</a>
+                 <a href="/logout">Logout</a>
+             </div> -->
+        </div>
+         <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+         <% if (typeof usuarioIsAdmin !== 'undefined' && usuarioIsAdmin) { %>
+             <a class="nav-link" href="/admin/dashboard" style="color: #d9534f;"><i class="fas fa-user-shield"></i> Admin</a>
+         <% } %>
+    </div>
+</nav>
+
+<!-- Barra de Navegação de Categorias -->
+<nav class="category-nav">
+    <a href="/browse" class="<%= typeof selectedCategoryId === 'undefined' || !selectedCategoryId ? 'active' : '' %>">Todas</a>
+    <% if (typeof categorias !== "undefined" && categorias.length > 0) { %>
+        <% categorias.forEach(categoria => { %>
+            <a href="/browse?categoria_id=<%= categoria.id %><%= typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : '' %>"
+               class="<%= typeof selectedCategoryId !== 'undefined' && selectedCategoryId == categoria.id ? 'active' : '' %>">
+                <%= categoria.nome %>
+            </a>
+        <% }) %>
+    <% } %>
+</nav>
+
+<main class="main-container">
+    <!-- O conteúdo específico da página será inserido aqui -->
+
