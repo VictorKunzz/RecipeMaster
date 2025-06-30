@@ -87,7 +87,7 @@ INSERT INTO categorias (nome) VALUES
      ("Doces e Sobremesas"),
      ("Lanches");
 
--- (Opcional) Criar um usuário administrador inicial (lembre-se de trocar a senha)
+-- (Opcional) Criar um usuário administrador inicial (senha: admin123)
  INSERT INTO usuarios (nome, email, senha, is_admin) VALUES 
- ('Admin', 'admin@recipemaster.com', 'admin123', TRUE);
+ ('Admin', 'admin@recipemaster.com', '$2a$10$Ld0F1dtTs6DAUjtAcxOfwOkvvrA2WQcENSOt5nyQwU3R0AzzsJXrm', TRUE);
 

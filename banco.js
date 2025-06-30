@@ -312,11 +312,21 @@ async function adminExcluirUsuario(id) {
 async function adminBuscarReceitasPendentes(page = 1, limit = 10) {
     const offset = (page - 1) * limit;
     const receitas = await query(`
-        SELECT r.id, r.titulo, r.data_criacao, u.nome as autor_nome
+        SELECT r.id, r.titulo, r.data_criacao, u.nome as autor_nome, c.nome as categoria_nome,
+               GROUP_CONCAT(ir.imagem_path) as imagens
         FROM receitas r
         JOIN usuarios u ON r.autor_id = u.id
+        JOIN categorias c ON r.categoria_id = c.id
+        LEFT JOIN imagens_receita ir ON r.id = ir.receita_id
         WHERE r.is_aprovado = FALSE
+        GROUP BY r.id
         ORDER BY r.data_criacao ASC LIMIT ? OFFSET ?`, [limit, offset]);
+    
+    // Processa as imagens
+    receitas.forEach(r => { 
+        r.imagens = r.imagens ? r.imagens.split(",") : []; 
+    });
+    
     const totalResult = await query("SELECT COUNT(*) as total FROM receitas WHERE is_aprovado = FALSE");
     const total = totalResult[0].total;
     return { receitas, total, page, limit };
@@ -330,16 +340,14 @@ async function adminAprovarReceita(id) {
 async function adminBuscarEstatisticas() {
     const [totalUsuarios] = await query("SELECT COUNT(*) as count FROM usuarios");
     const [totalReceitas] = await query("SELECT COUNT(*) as count FROM receitas");
-    const [totalReceitasAprovadas] = await query("SELECT COUNT(*) as count FROM receitas WHERE is_aprovado = TRUE");
+    const [receitasPendentes] = await query("SELECT COUNT(*) as count FROM receitas WHERE is_aprovado = FALSE");
     const [totalCategorias] = await query("SELECT COUNT(*) as count FROM categorias");
-    const [totalAvaliacoes] = await query("SELECT COUNT(*) as count FROM avaliacoes");
 
     return {
-        usuarios: totalUsuarios.count,
-        receitas: totalReceitas.count,
-        receitasAprovadas: totalReceitasAprovadas.count,
-        categorias: totalCategorias.count,
-        avaliacoes: totalAvaliacoes.count
+        totalUsuarios: totalUsuarios.count,
+        totalReceitas: totalReceitas.count,
+        receitasPendentes: receitasPendentes.count,
+        totalCategorias: totalCategorias.count
     };
 }
 
