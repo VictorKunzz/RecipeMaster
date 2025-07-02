@@ -6,7 +6,7 @@ const pool = mysql.createPool({
     host: process.env.DB_HOST || "localhost",
     user: process.env.DB_USER || "root", // Use variáveis de ambiente para segurança
     password: process.env.DB_PASSWORD || "", // Use variáveis de ambiente
-    database: process.env.DB_NAME || "recipemaster",
+    database: process.env.DB_NAME || "RecipeMaster",
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -79,7 +79,7 @@ async function buscarTodasReceitasAprovadas(page = 1, limit = 10, search = null,
                JOIN categorias c ON r.categoria_id = c.id
                JOIN usuarios u ON r.autor_id = u.id
                LEFT JOIN imagens_receita ir ON r.id = ir.receita_id
-               WHERE r.is_aprovado = TRUE`;
+               WHERE r.is_aprovado = 1`;
     const params = [];
 
     if (search) {
@@ -91,16 +91,15 @@ async function buscarTodasReceitasAprovadas(page = 1, limit = 10, search = null,
         params.push(categoryId);
     }
 
-    sql += " GROUP BY r.id ORDER BY r.data_criacao DESC LIMIT ? OFFSET ?";
     const offset = (page - 1) * limit;
-    params.push(limit, offset);
+    sql += ` GROUP BY r.id ORDER BY r.data_criacao DESC LIMIT ${limit} OFFSET ${offset}`;
 
     const receitas = await query(sql, params);
     // Processar imagens para serem arrays
     receitas.forEach(r => { r.imagens = r.imagens ? r.imagens.split(",") : []; });
 
     // Contar total para paginação (considerando filtros)
-    let countSql = "SELECT COUNT(DISTINCT r.id) as total FROM receitas r WHERE r.is_aprovado = TRUE";
+    let countSql = "SELECT COUNT(DISTINCT r.id) as total FROM receitas r WHERE r.is_aprovado = 1";
     const countParams = [];
     if (search) {
         countSql += " AND (r.titulo LIKE ? OR r.descricao LIKE ?)";

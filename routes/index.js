@@ -614,3 +614,61 @@ router.post("/perfil/alterar-senha", verificarLogin, async function(req, res, ne
 
 module.exports = router;
 
+
+/* POST toggle favorito */
+router.post("/toggle-favorito", verificarLogin, async function(req, res, next) {
+    try {
+        const { receita_id } = req.body;
+        const usuarioId = global.usuarioId;
+
+        if (!receita_id) {
+            return res.status(400).json({ success: false, message: "ID da receita é obrigatório" });
+        }
+
+        // Verifica se já é favorito
+        const isFavorito = await global.banco.verificarFavorito(usuarioId, receita_id);
+
+        let action;
+        if (isFavorito) {
+            // Remove dos favoritos
+            await global.banco.removerFavorito(usuarioId, receita_id);
+            action = 'removed';
+        } else {
+            // Adiciona aos favoritos
+            await global.banco.adicionarFavorito(usuarioId, receita_id);
+            action = 'added';
+        }
+
+        res.json({ success: true, action: action });
+
+    } catch (error) {
+        console.error("Erro ao toggle favorito:", error);
+        res.status(500).json({ success: false, message: "Erro interno do servidor" });
+    }
+});
+
+/* POST avaliar receita */
+router.post("/avaliar-receita", verificarLogin, async function(req, res, next) {
+    try {
+        const { receita_id, nota, comentario } = req.body;
+        const usuarioId = global.usuarioId;
+
+        if (!receita_id || !nota) {
+            return res.redirect(`/receita/${receita_id}?mensagem=${encodeURIComponent("Nota é obrigatória")}&sucesso=false`);
+        }
+
+        const notaInt = parseInt(nota);
+        if (notaInt < 1 || notaInt > 5) {
+            return res.redirect(`/receita/${receita_id}?mensagem=${encodeURIComponent("Nota deve ser entre 1 e 5")}&sucesso=false`);
+        }
+
+        await global.banco.inserirAvaliacao(notaInt, comentario || null, usuarioId, receita_id);
+
+        res.redirect(`/receita/${receita_id}?mensagem=${encodeURIComponent("Avaliação adicionada com sucesso!")}&sucesso=true`);
+
+    } catch (error) {
+        console.error("Erro ao avaliar receita:", error);
+        res.redirect(`/receita/${receita_id}?mensagem=${encodeURIComponent("Erro ao adicionar avaliação")}&sucesso=false`);
+    }
+});
+

@@ -1,0 +1,36 @@
+<%- include("partials/header") %>
+
+<div class="recipe-detail-container">
+    <% if (typeof receita !== "undefined" && receita) { %>
+        <div class="recipe-header">
+            <h1><%= receita.titulo %></h1>
+            <div class="recipe-actions">
+                <form action="/receita/<%= receita.id %>/favoritar" method="POST" style="display: inline;">
+                    <button type="submit" class="<%= typeof isFavorito !== "undefined" && isFavorito ? "favorited" : "" %>">
+                        <i class="fas fa-heart"></i> <%= typeof isFavorito !== "undefined" && isFavorito ? "Remover Favorito" : "Adicionar Favorito" %>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="recipe-meta">
+            <span><i class="fas fa-user"></i> Por <strong><%= receita.autor_nome %></strong></span>
+            <span><i class="fas fa-tag"></i> Categoria: <strong><%= receita.categoria_nome %></strong></span>
+        </div>
+        
+        <div class="recipe-content">
+            <div class="recipe-main-content">
+                <div class="section description">
+                    <h2>Descrição</h2>
+                    <p><%= receita.descricao %></p>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <p>Receita não encontrada.</p>
+        <p><a href="/browse">Voltar para as receitas</a></p>
+    <% } %>
+</div>
+
+<%- include("partials/footer") %>
+
