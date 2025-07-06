@@ -1,6 +1,8 @@
 # RecipeMaster - Aplicação Completa (Node.js + EJS + MySQL)
 
-Este é o projeto completo da plataforma RecipeMaster, desenvolvido com Node.js, Express, EJS para o frontend e MySQL como banco de dados, seguindo a estrutura e padrões do projeto base "mflix" fornecido.
+Integrantes: Victor Henrique Kunz de Souza, Henrique Cordeiro de Oliveira, Kauã Lucindo
+
+Este é o projeto completo da plataforma RecipeMaster, desenvolvido com Node.js, Express, EJS para o frontend e MySQL como banco de dados, seguindo a estrutura e padrões do projeto "mflix" como base.
 
 Link de acesso ao Figma: https://www.figma.com/design/dAAU4zDWcOpTIhKK7T2tR3/RECIPEMASTER?node-id=0-1&p=f
 
@@ -115,7 +117,7 @@ Link de acesso ao Figma: https://www.figma.com/design/dAAU4zDWcOpTIhKK7T2tR3/REC
 
 *   **Uploads:** As imagens carregadas são salvas localmente na pasta `public/uploads/`. Certifique-se de que a aplicação tem permissão de escrita neste diretório.
 *   **Segurança:** Para produção, é crucial usar senhas fortes, configurar HTTPS, proteger as variáveis de ambiente e revisar as práticas de segurança.
-*   **Sessão:** A gestão da sessão de login é feita através de variáveis globais (`global.usuarioId`, `global.usuarioNome`, etc.), seguindo o padrão do projeto `mflix` fornecido.
+*   **Sessão:** A gestão da sessão de login é feita através de variáveis globais (`global.usuarioId`, `global.usuarioNome`, etc.), seguindo o padrão do projeto `mflix`.
 
 ---
 
